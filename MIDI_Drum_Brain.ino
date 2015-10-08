@@ -56,13 +56,12 @@ void setup(){
   // Start and Initialise the LCD
   lcd.begin(16,2);
   lcd.backlight();
-  lcd.print("MIDI Drum Brain");
-  lcd.setCursor(0, 1);
-  lcd.print("v1.0");
+  displayDefault();
 
   Serial1.begin(31250);         // MIDI Serial is run over TX Pin so uses 'Serial1' for Leonardo.
                                 // For other Arduino variants change this back to 'Serial'
   pinMode(hatPedal, INPUT_PULLUP);
+  pinMode(editButton, INPUT_PULLUP);
   pinMode(enterButton, INPUT_PULLUP);
   pinMode(backButton, INPUT_PULLUP);
   pinMode(forwardButton, INPUT_PULLUP);
@@ -140,4 +139,10 @@ boolean buttonPressed(int button, byte statePos, boolean debounce){
     buttonState[statePos] = !lastState;
   }
   return pressed;
+}
+
+void displayDefault(){
+  lcd.print("MIDI Drum Brain");
+  lcd.setCursor(0, 1);
+  lcd.print("v1.0");
 }
