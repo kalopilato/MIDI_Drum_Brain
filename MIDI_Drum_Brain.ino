@@ -1,14 +1,18 @@
+#include <Wire.h>
+#include <LiquidCrystal_I2C_DFR.h>
+
+LiquidCrystal_I2C_DFR lcd(0x27);
 
 /* Drum Pad Input Pins */
 int PIN_COUNT = 6;              // Defines number of pins in use.  Pins are scanned in sequence from A0 to A(PIN_COUNT - 1)
 
 /* Tunable Values */
 byte ANALOG_SAMPLES = 8;        // Defines how many consecutive reads to take from one strike
-byte MAX_STRIKE_VOLTAGE = 100;  // Defines the maximum voltage limit to be read from one strike (higher voltages are clipped to this value)
+byte MAX_STRIKE_VOLTAGE = 150;  // Defines the maximum voltage limit to be read from one strike (higher voltages are clipped to this value)
 byte MIN_VEL = 5;               // Defines the minimum output MIDI velocity
-byte DELAY = 1;                // Defines how many ms to wait after detecting a strike before polling for another
-byte NOTE_HOLD = 5;             // Defines how long the midi note will hold for
-byte PEDAL_VELOCITY = 20;       // Defines velocity of pedal changes
+byte DELAY = 3;                // Defines how many ms to wait after detecting a strike before polling for another
+byte NOTE_HOLD = 3;             // Defines how long the midi note will hold for
+byte PEDAL_VELOCITY = 1;       // Defines velocity of pedal changes
 
 /* MIDI Command Values */
 int noteON = 144;               // 10010000 in binary, note on command
@@ -32,7 +36,16 @@ int hatPedal = 4;               // Defines which pin hat pedal is connected to
 int pedalState = HIGH;          // Defines initial pedal state
 
 void setup(){
-  Serial.begin(31250);
+
+  // Start and Initialise the LCD
+  lcd.begin(16,2);
+  lcd.backlight();
+  lcd.print("MIDI Drum Brain");
+  lcd.setCursor(0, 1);
+  lcd.print("v1.0");
+
+  Serial1.begin(31250);         // MIDI Serial is run over TX Pin so uses 'Serial1' for Leonardo.
+                                // For other Arduino variants change this back to 'Serial'
   pinMode(hatPedal, INPUT_PULLUP);
 }
 
@@ -48,7 +61,7 @@ void loop(){
       pedalState = !pedalState;
     }
 
-    if(analogRead(i) > 0){
+    if(analogRead(i) > 1){
 
       byte maxVal = 0;
 
@@ -61,7 +74,6 @@ void loop(){
       if(maxVal > MAX_STRIKE_VOLTAGE) maxVal = MAX_STRIKE_VOLTAGE;
       byte velocity = (float) maxVal / MAX_STRIKE_VOLTAGE * 127;
       if(velocity < MIN_VEL) velocity = MIN_VEL;  // Limit minimum velocity value to MIN_VEL (defined in class)*/
-
 
       // Output MIDI
       int ccNote = 0;
@@ -79,13 +91,13 @@ void loop(){
 
 /* Write a single on/off signal to MIDI output with velocity */
 void MIDIoutput(int MIDInote, int MIDIvelocity){
-  Serial.write(noteON);
-  Serial.write(MIDInote);
-  Serial.write(MIDIvelocity);
+  Serial1.write(noteON);
+  Serial1.write(MIDInote);
+  Serial1.write(MIDIvelocity);
   delay(NOTE_HOLD);
-  Serial.write(noteOFF);
-  Serial.write(MIDInote);
-  Serial.write(MIDIvelocity);
+  Serial1.write(noteOFF);
+  Serial1.write(MIDInote);
+  Serial1.write(MIDIvelocity);
 }
 
 /* Check if Hat should be open or closed and return the appropriate MIDI note */
