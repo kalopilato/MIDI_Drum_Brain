@@ -35,6 +35,22 @@ int SNARE_SIDESTICK = 42;
 int hatPedal = 4;               // Defines which pin hat pedal is connected to
 int pedalState = HIGH;          // Defines initial pedal state
 
+/* Menu Controls */
+int editButton = 7;
+int backButton = 9;
+int forwardButton = 8;
+int enterButton = 10;
+
+int backState = HIGH;
+int forwardState = HIGH;
+int editState = HIGH;
+int enterState = HIGH;
+int buttonState[] = {backState, forwardState, editState, enterState};
+byte backPos = 0;
+byte forwardPos = 1;
+byte editPos = 2;
+byte enterPos = 3;
+
 void setup(){
 
   // Start and Initialise the LCD
@@ -47,6 +63,9 @@ void setup(){
   Serial1.begin(31250);         // MIDI Serial is run over TX Pin so uses 'Serial1' for Leonardo.
                                 // For other Arduino variants change this back to 'Serial'
   pinMode(hatPedal, INPUT_PULLUP);
+  pinMode(enterButton, INPUT_PULLUP);
+  pinMode(backButton, INPUT_PULLUP);
+  pinMode(forwardButton, INPUT_PULLUP);
 }
 
 void loop(){
@@ -104,4 +123,21 @@ void MIDIoutput(int MIDInote, int MIDIvelocity){
 int getHat(){
   if(pedalState == LOW) return HAT_CLOSED;
   else return HAT_OPEN;
+}
+
+/* Checks if a button has been pressed */
+boolean buttonPressed(int button, byte statePos, boolean debounce){
+  int state1 = digitalRead(button);
+  if(debounce){
+    delay(5);
+    int state2 = digitalRead(button);
+    if(state1 != state2) return false;
+  }
+  boolean pressed = false;
+  int lastState = buttonState[statePos];
+  if(state1 != lastState){
+    if(state1 == LOW) pressed = true;
+    buttonState[statePos] = !lastState;
+  }
+  return pressed;
 }
