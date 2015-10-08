@@ -1,6 +1,6 @@
 
 /* Drum Pad Input Pins */
-int PIN_COUNT = 4;              // Defines number of pins in use.  Pins are scanned in sequence from A0 to A(PIN_COUNT - 1)
+int PIN_COUNT = 6;              // Defines number of pins in use.  Pins are scanned in sequence from A0 to A(PIN_COUNT - 1)
 
 /* Tunable Values */
 byte ANALOG_SAMPLES = 8;        // Defines how many consecutive reads to take from one strike
@@ -69,7 +69,7 @@ void loop(){
       if(i == 1) ccNote = SNARE;
       if(i == 2) ccNote = TOM1;
       if(i == 3) ccNote = TOM2;
-      if(i == 4) getHat();
+      if(i == 4) ccNote = getHat();
       if(i == 5) ccNote = CRASH_1;
       MIDIoutput(ccNote, velocity);
     }
