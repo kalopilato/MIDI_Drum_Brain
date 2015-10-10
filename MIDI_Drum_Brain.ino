@@ -66,14 +66,14 @@ int HAT_OPEN = 54;
 int HAT_CLOSED = 49;
 
 /* Hat Pedal */
-int hatPedal = 4;               // Defines which pin hat pedal is connected to
+int hatPedal = 8;               // Defines which pin hat pedal is connected to
 int pedalState = HIGH;          // Defines initial pedal state
 
 /* Menu Controls */
-int editButton = 7;
-int backButton = 9;
-int forwardButton = 8;
-int enterButton = 10;
+int editButton = 4;
+int backButton = 6;
+int forwardButton = 5;
+int enterButton = 7;
 
 int backState = HIGH;
 int forwardState = HIGH;
