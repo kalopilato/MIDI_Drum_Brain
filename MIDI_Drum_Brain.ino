@@ -71,19 +71,21 @@ int pedalState = HIGH;          // Defines initial pedal state
 
 /* Menu Controls */
 int editButton = 4;
-int backButton = 6;
-int forwardButton = 5;
+int encoderBackPin = 6;
+int encoderForwardPin = 5;
 int enterButton = 7;
 
-int backState = HIGH;
-int forwardState = HIGH;
+int encoderBackState = HIGH;
+int encoderForwardState = LOW;
 int editState = HIGH;
 int enterState = HIGH;
-int buttonState[] = {backState, forwardState, editState, enterState};
+int buttonState[] = {encoderBackState, encoderForwardState, editState, enterState};
 byte backPos = 0;
 byte forwardPos = 1;
 byte editPos = 2;
 byte enterPos = 3;
+
+int encoderState = LOW;
 
 void setup(){
 
@@ -97,8 +99,8 @@ void setup(){
   pinMode(hatPedal, INPUT_PULLUP);
   pinMode(editButton, INPUT_PULLUP);
   pinMode(enterButton, INPUT_PULLUP);
-  pinMode(backButton, INPUT_PULLUP);
-  pinMode(forwardButton, INPUT_PULLUP);
+  pinMode(encoderBackPin, INPUT_PULLUP);
+  pinMode(encoderForwardPin, INPUT_PULLUP);
 }
 
 void loop(){
@@ -190,22 +192,28 @@ void editMenu(){
   lcd.print(padNames[padNumber]);
 
   while(!buttonPressed(editButton, editPos, true)){
-    if(buttonPressed(forwardButton, forwardPos, true)){
-      if(padNumber < PIN_COUNT - 1) padNumber++;
-      else padNumber = 0;
-      //lineWrite(padNames[padNumber], "");
-      lcd.clear();
-      lcd.setCursor(0, 0);
-      lcd.print(padNames[padNumber]);
+
+    // Check for Encoder State Change
+    encoderState = digitalRead(encoderForwardPin);
+    if(encoderForwardState == LOW && encoderState == HIGH){
+        if(digitalRead(encoderBackPin) == LOW){
+          if(padNumber < PIN_COUNT) padNumber++;
+          else padNumber = 0;
+          //lineWrite(padNames[padNumber], "");
+          lcd.clear();
+          lcd.setCursor(0, 0);
+          lcd.print(padNames[padNumber]);
+        }
+        else{
+          if(padNumber > 0) padNumber--;
+          else padNumber = PIN_COUNT;
+          //lineWrite(padNames[padNumber], "");
+          lcd.clear();
+          lcd.setCursor(0, 0);
+          lcd.print(padNames[padNumber]);
+        }
     }
-    if(buttonPressed(backButton, backPos, true)){
-      if(padNumber > 0) padNumber--;
-      else padNumber = PIN_COUNT - 1;
-      //lineWrite(padNames[padNumber], "");
-      lcd.clear();
-      lcd.setCursor(0, 0);
-      lcd.print(padNames[padNumber]);
-    }
+    encoderForwardState = encoderState;
 
     if(buttonPressed(enterButton, enterPos, true)){
       int* currentNoteArray = noteArray[padNumber];
@@ -226,28 +234,34 @@ void editMenu(){
       while(!edited){
         if(buttonPressed(editButton, editPos, true)) return;
 
-        if(buttonPressed(forwardButton, forwardPos, true)){
-          if(notePos < noteArraySize[padNumber] - 1) notePos++;
-          else notePos = 0;
-          currentNoteName = currentNameArray[notePos];
-          //lineWrite(editMsg, currentNoteName);
-          lcd.clear();
-          lcd.setCursor(0, 0);
-          lcd.print(editMsg);
-          lcd.setCursor(0, 1);
-          lcd.print(currentNoteName);
+        // Check for Encoder State Change
+        encoderState = digitalRead(encoderForwardPin);
+        if(encoderForwardState == LOW && encoderState == HIGH){
+            if(digitalRead(encoderBackPin) == LOW){
+              if(notePos < noteArraySize[padNumber] - 1) notePos++;
+              else notePos = 0;
+              currentNoteName = currentNameArray[notePos];
+              //lineWrite(editMsg, currentNoteName);
+              lcd.clear();
+              lcd.setCursor(0, 0);
+              lcd.print(editMsg);
+              lcd.setCursor(0, 1);
+              lcd.print(currentNoteName);
+            }
+            else{
+              if(notePos > 0) notePos--;
+              else notePos = noteArraySize[padNumber] - 1;
+              currentNoteName = currentNameArray[notePos];
+              //lineWrite(editMsg, currentNoteName);
+              lcd.clear();
+              lcd.setCursor(0, 0);
+              lcd.print(editMsg);
+              lcd.setCursor(0, 1);
+              lcd.print(currentNoteName);
+            }
         }
-        if(buttonPressed(backButton, backPos, true)){
-          if(notePos > 0) notePos--;
-          else notePos = noteArraySize[padNumber] - 1;
-          currentNoteName = currentNameArray[notePos];
-          //lineWrite(editMsg, currentNoteName);
-          lcd.clear();
-          lcd.setCursor(0, 0);
-          lcd.print(editMsg);
-          lcd.setCursor(0, 1);
-          lcd.print(currentNoteName);
-        }
+        encoderForwardState = encoderState;
+
         if(buttonPressed(enterButton, enterPos, true)){
           noteArrayPos[padNumber] = notePos;
           //lineWrite(editMsg, "DONE");
